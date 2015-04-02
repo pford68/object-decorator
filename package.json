@@ -24,5 +24,8 @@
   "bugs": {
     "url": "https://github.com/pford68/ObjectDecorator/issues"
   },
-  "homepage": "https://github.com/pford68/ObjectDecorator"
+  "homepage": "https://github.com/pford68/ObjectDecorator",
+  "dependencies": {
+    "underscore": "^1.8.2"
+  }
 }
