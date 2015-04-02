@@ -1,5 +1,15 @@
 These are methods that would be nice to have in Object.prototype.  Since they can't be added safely, I created a Decorator for Object.
 
+```javascript
+
+var decorate = require("../../index").decorate;
+...
+var obj = {id: 3};
+var obj2 = {author: "Philip Ford"};
+decorate(obj).extend(obj2);
+        
+```
+
 ## API Documentation
 ### extend(that, varargs)
 Mixes the properties of the arguments into the component.
