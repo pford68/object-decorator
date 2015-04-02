@@ -310,6 +310,26 @@ _.extend(ObjectDecorator.prototype, {
      */
     getPrototype: function(){
         return this.component.__proto__ || Object.getPrototypeOf(this.component);
+    },
+
+
+
+    /**
+     * Creates a constant by the name k in the component's scope.
+     * @param k
+     * @param v
+     */
+    constant: function(k, v){
+        if (_.isObject(v)) {
+            throw new Error(["A constant must be a String or a primitive:  ", k, ":", v].join(""));
+        }
+        k = k.toUpperCase();
+        Object.defineProperty(this.component, k, {
+            value: v,
+            writable: false,
+            enumerable: true,
+            configurable: false
+        });
     }
 });
 

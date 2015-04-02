@@ -414,4 +414,30 @@ describe("getSpec()", function () {
             expect(decorate(cdata).getSpec().equals(obj)).toBeTruthy();
         });
     });
+
+
+
+    describe("constant()", function(){
+        it("should create an immutable key/value pair", function(){
+            var my = {};
+            decorate(my).constant("__CLASSNAME__", "MyGreatClass");
+            my.__CLASSNAME__ = "OK";
+            expect("MyGreatClass").toEqual(my.__CLASSNAME__);
+        });
+
+        it("should create an key/value pair that can't be deleted from its object scope", function(){
+            var my = {};
+            decorate(my).constant("__CLASSNAME__", "MyGreatClass");
+
+            delete my.__CLASSNAME__;
+            expect("MyGreatClass").toEqual(my.__CLASSNAME__);
+        });
+
+        it("should convert the key to upper case if it is not already upper case", function(){
+            var my = {};
+            decorate(my).constant("some_Name", "Roger");
+            expect(my.SOME_NAME).toBeDefined();
+            expect(my.some_Name).toBeUndefined();
+        });
+    });
 });
