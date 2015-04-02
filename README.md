@@ -11,15 +11,15 @@ decorate(obj).extend(obj2);
 ```
 
 ## API Documentation
-### extend(that, varargs)
-Mixes the properties of the arguments into the component.
+### extend(varargs)
+Mixes the properties of the arguments into the component.  Takes an arbitrary number of objects as parameters.
 
-### augment(that, props)
+### augment(that)
 Mixes the properties of the specified object into the component, but only properties that do not already
 exist in the component.  In other words, existing properties are not overridden in the component.  This is the 
 method I find most useful.
 
-### override(that, props)
+### override(that)
 Adds the properties of the specified object to the component if and only if the component already
 has properties of the same name.
 
