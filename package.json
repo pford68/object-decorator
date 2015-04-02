@@ -1,0 +1,28 @@
+{
+  "name": "ObjectDecorator",
+  "version": "1.0.0",
+  "description": "Methods that would be nice to have in Object.prototype.  But since adding to Object.prototype isn't safe, I created a Decorator for Object.",
+  "main": "index.js",
+  "scripts": {
+    "test": "jasmine-node test/spec"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pford68/ObjectDecorator"
+  },
+  "keywords": [
+    "object",
+    "prototype",
+    "extend",
+    "augment",
+    "decorator",
+    "has",
+    "forEach"
+  ],
+  "author": "Philip Ford",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/pford68/ObjectDecorator/issues"
+  },
+  "homepage": "https://github.com/pford68/ObjectDecorator"
+}
