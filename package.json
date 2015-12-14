@@ -1,5 +1,5 @@
 {
-  "name": "ObjectDecorator",
+  "name": "object-decorator",
   "version": "1.0.0",
   "description": "Methods that would be nice to have in Object.prototype.  But since adding to Object.prototype isn't safe, I created a Decorator for Object.",
   "main": "index.js",
