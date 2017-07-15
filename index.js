@@ -2,17 +2,25 @@
  *
  * @author Philip Ford
  */
+'use strict';
 
-var _ = require("underscore");
+const util = require("object-util");
+const extend = util.extend;
 
-if (!_.isFunction(Array.from)){
+// If you're really serious about isFunction,
+// see https://stackoverflow.com/a/7356528/122955
+function isFunction(value){
+    return typeof value === 'function';
+}
+
+if (!isFunction(Array.from)){
     Array.from = function($arguments, transformer){
-        var $_ = Array.prototype.slice.call($arguments);
-        if (_.isFunction(transformer)){
+        let $_ = Array.prototype.slice.call($arguments);
+        if (!isFunction(transformer)){
             return $_.map(transformer);
         }
         return $_;
-    }
+    };
 }
 
 
@@ -21,17 +29,10 @@ if (!_.isFunction(Array.from)){
 function Specification(spec) {
     this.spec = spec;
 }
-_.extend(Specification.prototype, {
-    /**
-     * Returns true/false for whether the specified object has all of the properties in the component.
-     * and whether the types of the corresponding properties match.
-     *
-     * @param that
-     * @return {Boolean}
-     */
+extend(Specification.prototype, {
     like: function (that) {
-        var spec = this.spec;
-        for (var i in spec) {
+        let spec = this.spec;
+        for (let i in spec) {
             if (spec.hasOwnProperty(i) && spec[i] !== null) {
                 if (that[i] !== null && (typeof spec[i] !== typeof that[i])) {
                     return false;
@@ -39,35 +40,17 @@ _.extend(Specification.prototype, {
             }
         }
         return true;
-    },
-    /**
-     * Returns true/false for whether the specs of the component and the specified object match exactly,
-     * sharing all of the same properties, and whether the types of the corresponding properties match.
-     *
-     * @param that
-     * @return {Boolean}
-     */
-    equals: function (that) {
-        var spec = this.spec;
-        for (var i in that) {
-            if (that.hasOwnProperty(i) && that[i] !== null) {
-                if (spec[i] !== null && (typeof spec[i] !== typeof that[i])) {
-                    return false;
-                }
-            }
-        }
-        return this.like(that);
     }
 });
 
 
 //============================================================================ Public
-var ObjectDecorator = function (that) {
+let Decorator = function (that) {
     this.component = that;
 };
 
 
-Object.defineProperties(ObjectDecorator.prototype, {
+Object.defineProperties(Decorator.prototype, {
     component: {
         enumerable: false,
         configurable: false,
@@ -76,7 +59,7 @@ Object.defineProperties(ObjectDecorator.prototype, {
 });
 
 
-_.extend(ObjectDecorator.prototype, {
+extend(Decorator.prototype, {
 
     /**
      * Mixes the properties of the arguments into the component.
@@ -86,7 +69,7 @@ _.extend(ObjectDecorator.prototype, {
      */
     extend: function (varargs) {
         function _extend(a, b) {
-            for (var i in b) {
+            for (let i in b) {
                 if (b.hasOwnProperty(i)) {
                     a[i] = b[i];
                 }
@@ -94,8 +77,8 @@ _.extend(ObjectDecorator.prototype, {
             return a;
         }
 
-        var args = Array.from(arguments);
-        for (var i = 0, len = args.length; i < len; i++) {
+        let args = Array.from(arguments);
+        for (let i = 0, len = args.length; i < len; i++) {
             _extend(this.component, args[i]);
         }
         return this;   // For chaining
@@ -109,11 +92,8 @@ _.extend(ObjectDecorator.prototype, {
      * @return {*}
      */
     augment: function (that) {
-        var i, cmp = this.component;
-        for (i in that) {
-            if (that.hasOwnProperty(i))
-                if (cmp[i] == null) cmp[i] = that[i];
-        }
+        let cmp = this.component;
+        util.augment(cmp, that);
         return this;   // For chaining
     },
 
@@ -126,11 +106,8 @@ _.extend(ObjectDecorator.prototype, {
      * @return {*}
      */
     override: function (that) {
-        var cmp = this.component;
-        for (var i in that) {
-            if (that.hasOwnProperty(i))
-                if (i in cmp) cmp[i] = that[i];
-        }
+        let cmp = this.component;
+        util.override(cmp, that);
         return this;  // For chaining
     },
 
@@ -138,9 +115,10 @@ _.extend(ObjectDecorator.prototype, {
     /**
      * Checks whether all of the arguments are properties of the component.
      */
-    has: function (varargs) {
-        var cmp = this.component, args = Array.from(arguments);
-        for (var i = 1, len = args.length; i < len; ++i) {
+    has: function (...varargs) {
+        let cmp = this.component,
+            args = [...varargs];
+        for (let i = 1, len = args.length; i < len; ++i) {
             if (!cmp[args[i]]) return false;
         }
         return true;
@@ -148,13 +126,14 @@ _.extend(ObjectDecorator.prototype, {
 
 
     /**
-     * Performs an operation for each item in the specified object.
+     * Performs an operation for each item in the component.
+     * Why not just use Object.values().forEach(), you ask?  It is not performing quite like I want.
      *
      * @param callback
      */
     forEach: function (callback) {
-        var cmp = this.component;
-        for (var i in cmp) {
+        let cmp = this.component;
+        for (let i in cmp) {
             if (cmp.hasOwnProperty(i)) {
                 callback(cmp[i], i, cmp);
             }
@@ -165,10 +144,12 @@ _.extend(ObjectDecorator.prototype, {
 
     /**
      * Creates a new object by performing a transformation on each value in the specified object.
+     * Why not just use Object.values().map(), you ask?  It is not performing quite like I want.
+     *
      * @param callback
      */
     map: function (callback) {
-        var result = {};
+        let result = {};
         this.forEach(function (item, i, cmp) {
             result[i] = callback(item, i, cmp);
         });
@@ -178,13 +159,19 @@ _.extend(ObjectDecorator.prototype, {
 
     /**
      * Returns an object of component key/value pairs that passed the filter.  The filter requires a callback
-     * function that takes the following parameters:  (1) the value of the current property, the name of the
-     * current property, and the component.  That function must return true/false.
+     * function that takes the following parameters:
+     * (1) the value of the current property,
+     * (2) the name of the current property,
+     * (3) and the component.
+     *
+     * That function must return true/false.
+     *
+     * Why not just use Object.values().filter(),  you ask?  It is not performing quite like I want.
      *
      * @param {Function} callback
      */
     filter: function (callback) {
-        var result = {};
+        let result = {};
         this.forEach(function (item, i, cmp) {
             if (callback(item, i, cmp) === true) {
                 result[i] = item;
@@ -212,8 +199,8 @@ _.extend(ObjectDecorator.prototype, {
      * @return {Object}
      */
     difference: function (that) {
-        var i, result = {};
-        _.extend(result, this.component);
+        let i, result = {};
+        extend(result, this.component);
         for (i in that) {
             if (that.hasOwnProperty(i)) {
                 if (result[i] && result[i] === that[i]) delete result[i];
@@ -233,62 +220,54 @@ _.extend(ObjectDecorator.prototype, {
      */
     intersection: function (that) {
         return this.filter(function (item, i, o) {
-            return that[i] == o[i];
+            return that[i] === o[i];
         });
     },
 
 
     /**
-     * Returns an array of the values in the component.
+     * Returns an array of the values in the component.  Why not just use Object.values(),
+     * you ask?  It is not performing quite like I want.
      *
      * @return {Array}
      */
     values: function () {
-        var result = [];
-        if (this.component) {
-            this.forEach(function (item) {
-                result.push(item);
-            });
-        }
+        if (this.component === null || this.component === undefined) return null;
+        let result = [];
+        this.forEach(function (item) {
+            result.push(item);
+        });
         return result;
     },
 
 
 
     /**
-     * Returns a "Specification" object that can be used to compare the spec for the component to
-     * the spec for another object.  Used for duck-typing.
+     * Returns true/false for whether the specified object has all of the properties in the component.
+     * and whether the types of the corresponding properties match.
+     *
+     * @param that
+     * @return {Boolean}
      */
-    getSpec: function () {
-        var spec = this.component;
-        return new Specification(spec);
+    like: function (that) {
+        let spec = this.component;
+        return new Specification(spec).like(that);
     },
 
 
     /**
      * Returns true/false for whether the specified value is contained in the object.
+     * Here is a case where you really can just use ES5 methods:
      *
-     * @param that
+     * <code>Object.values(myGreatObject).includes(value);</code>
+     *
+     * @param value {Object}  The value to search for
      * @return {Boolean}
      */
-    contains: function (that) {
-        function compare(a, b) {
-            if (a && _.isFunction(a.equals)) {
-                return a.equals(b)
-            }
-            return false;
-        }
-
-        var cmp = this.component;
-
-        // Intentionally not using hasOwnProperty:
-        // I might want to know about inherited properties.
-        for (var i in cmp) {
-            if (cmp[i] == that || (compare(cmp[i], that))) {
-                return true;
-            }
-        }
-        return false;
+    contains: function (value) {
+        // This seems like a more necessary function a few years ago...trust me.
+        // Now it's a one-liner.
+        return Object.values(this.component).includes(value);
     },
 
 
@@ -298,44 +277,20 @@ _.extend(ObjectDecorator.prototype, {
     },
 
     remove: function (key) {
-        var result = this.component[key];
+        let result = this.component[key];
         delete this.component[key];
         return result;
     },
 
-    /**
-     * Cross-browser function for returning an object's prototype.
-     *
-     * @returns {*|Object}
-     */
-    getPrototype: function(){
-        return this.component.__proto__ || Object.getPrototypeOf(this.component);
-    },
-
-
-
-    /**
-     * Creates a constant by the name k in the component's scope.
-     * @param k
-     * @param v
-     */
-    constant: function(k, v){
-        if (_.isObject(v)) {
-            throw new Error(["A constant must be a String or a primitive:  ", k, ":", v].join(""));
-        }
-        k = k.toUpperCase();
-        Object.defineProperty(this.component, k, {
-            value: v,
-            writable: false,
-            enumerable: true,
-            configurable: false
-        });
+    copy: function(){
+        return this.extend({}, this.component);
     }
+
 });
 
 
 module.exports = {
-    decorate: function (that) {
-        return new ObjectDecorator(that);
-    }
+    decorate: function(that) {
+        return new Decorator(that);
+    },
 };

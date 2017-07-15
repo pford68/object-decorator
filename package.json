@@ -4,7 +4,7 @@
   "description": "Methods that would be nice to have in Object.prototype.  But since adding to Object.prototype isn't safe, I created a Decorator for Object.",
   "main": "index.js",
   "scripts": {
-    "test": "jasmine-node test/spec"
+    "test": "gulp test"
   },
   "repository": {
     "type": "git",
@@ -25,7 +25,5 @@
     "url": "https://github.com/pford68/ObjectDecorator/issues"
   },
   "homepage": "https://github.com/pford68/ObjectDecorator",
-  "dependencies": {
-    "underscore": "^1.8.2"
-  }
+  "dependencies": {}
 }

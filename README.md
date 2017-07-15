@@ -51,19 +51,10 @@ the specified object.
 ### values()
 Returns an array of the values in the component.
 
-### getSpec()
-Returns a "Specification" object that can be used to compare the spec for the component to
-the spec for another object.  Used for duck-typing.
-
-#### Methods of Specification
 ##### like(that)
 Returns true/false for whether the specified object has all of the properties in the component.
 and whether the types of the corresponding properties match.
      
-##### equals(that) 
-Returns true/false for whether the specs of the component and the specified object match exactly,
-sharing all of the same properties, and whether the types of the corresponding properties match.
-
 ### contains(value)
 Returns true/false for whether the specified value is contained in the object.
 
@@ -71,8 +62,3 @@ Returns true/false for whether the specified value is contained in the object.
 
 ### remove(k)
 
-### constant(k, v)
-Creates a constant in the component's scope.  If the key is not uppercase, it will be converted.
-
-### getPrototypeOf()
-Cross-browser function for returning an object's prototype.

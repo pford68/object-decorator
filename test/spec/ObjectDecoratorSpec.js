@@ -1,9 +1,9 @@
-var decorate = require("../../index").decorate;
-var _ = require("underscore");
+const decorate = require("../../index").decorate;
+const extend = require("object-util").extend;
 
 // Common data
 // Note:  when I tried to initialize this in beforeEach() below, cdata was undefined in some tests.
-var cdata = {
+let cdata = {
     id: 'jsmith',
     number: '34079',
     age: 32,
@@ -36,21 +36,20 @@ function testIterators(item, key, scope) {
 }
 
 
-
 describe("extend()", function () {
 
     it("should mix the second argument into the first argument", function () {
-        var obj = {id: 3};
-        var obj2 = {author: "Philip Ford"};
+        let obj = {id: 3};
+        let obj2 = {author: "Philip Ford"};
         decorate(obj).extend(obj2);
         expect(obj.author).toBe("Philip Ford");
         expect(obj2.id).toBeUndefined();
     });
 
     it("should mix all arguments, after the first argument, into the first argument", function () {
-        var obj = {id: 3};
-        var obj2 = {author: "Philip Ford"};
-        var obj3 = {copyright: "July 2012"};
+        let obj = {id: 3};
+        let obj2 = {author: "Philip Ford"};
+        let obj3 = {copyright: "July 2012"};
         decorate(obj).extend(obj2, obj3);
         expect(obj.author).toBe("Philip Ford");
         expect(obj.copyright).toBe("July 2012");
@@ -61,7 +60,7 @@ describe("extend()", function () {
 
 
 describe("augment()", function () {
-    var theObject,
+    let theObject,
         mixin = {
             id: 'mixin',
             bgColor: 'red',
@@ -121,7 +120,7 @@ describe("augment()", function () {
 
 
 describe("override()", function () {
-    var theObject,
+    let theObject,
         mixin = {
             id: 'mixin',
             bgColor: 'red',
@@ -181,10 +180,10 @@ describe("override()", function () {
 
 describe("difference()", function () {
     it("should return an object containing the differences (different key or different key/value pair)" +
-    " b/w the component and the specified object", function () {
-        var obj1 = {id: 3, name: "John"};
-        var obj2 = {id: 4, value: 45, name: "John"};
-        var diff = decorate(obj1).difference(obj2);
+        " b/w the component and the argument, returning the values from the argument when the names match", () => {
+        let obj1 = {id: 3, name: "John"};
+        let obj2 = {id: 4, value: 45, name: "John"};
+        let diff = decorate(obj1).difference(obj2);
         expect(diff.id).toEqual(4);
         expect(diff.name).toBeUndefined();
         expect(diff.value).toBe(45);
@@ -194,14 +193,14 @@ describe("difference()", function () {
 
 describe("size()", function () {
     it("should return the number of properties in the specified object", function () {
-        var obj = {id: "45hgfd", name: "John", age: 26};
+        let obj = {id: "45hgfd", name: "John", age: 26};
         expect(decorate(obj).size()).toBe(3);
         expect(decorate({}).size()).toBe(0);
     });
 });
 
 describe("has()", function () {
-    var that;
+    let that;
 
     beforeEach(function () {
         that = {id: "45hgfd", name: "John", age: 26};
@@ -221,9 +220,9 @@ describe("has()", function () {
 
 
 describe("forEach()", function () {
-    it("should perform the specified action for each item in the component", function () {
-        var items = [], nulls = [];
-        decorate(cdata).forEach(function (item, key, scope) {
+    it("should perform the specified action for each item in the component", () => {
+        let items = [], nulls = [];
+        decorate(cdata).forEach((item, key) => {
             items.push(item);
             if (item === null) {
                 nulls.push(key);
@@ -234,7 +233,7 @@ describe("forEach()", function () {
         expect(nulls[0]).toEqual("endDate");
     });
 
-    it("should make the each item, key, and the component available to the callback, in that order", function () {
+    it("should make the each item, key, and the component available to the callback, in that order", () => {
         decorate(cdata).forEach(function (item, key, scope) {
             testIterators(item, key, scope);
         });
@@ -243,13 +242,13 @@ describe("forEach()", function () {
 
 
 describe("map()", function () {
-    var a = decorate(cdata).map(function (item) {
+    let a = decorate(cdata).map(function (item) {
         return false;
     });
-    var b = decorate(cdata).map(function (item) {
+    let b = decorate(cdata).map(function (item) {
         return true;
     });
-    var c = decorate(cdata).map(function (item, key) {
+    let c = decorate(cdata).map(function (item, key) {
         if (key === "ssn") return "XXX-XX-XXXX";
         else if (key === "active") return false;
         else return item += "!";
@@ -279,13 +278,13 @@ describe("map()", function () {
 
 
 describe("filter()", function () {
-    var a = decorate(cdata).filter(function (item) {
+    let a = decorate(cdata).filter(function (item) {
         return false;
     });
-    var b = decorate(cdata).filter(function (item) {
+    let b = decorate(cdata).filter(function (item) {
         return true;
     });
-    var c = decorate(cdata).filter(function (item, key) {
+    let c = decorate(cdata).filter(function (item, key) {
         return ( typeof item === 'string');
     });
 
@@ -313,9 +312,9 @@ describe("filter()", function () {
 
 describe("intersection()", function () {
     it("should return a new object containing only the similarities (same property name and value) between the component and specified object", function () {
-        var obj1 = {id: 3, name: "John"};
-        var obj2 = {id: 4, value: 45, name: "John"};
-        var is = decorate(obj1).intersection(obj2);
+        let obj1 = {id: 3, name: "John"};
+        let obj2 = {id: 4, value: 45, name: "John"};
+        let is = decorate(obj1).intersection(obj2);
         expect(is.id).toBeUndefined();
         expect(is.name).toBe("John");
         expect(is.value).toBeUndefined();
@@ -324,28 +323,27 @@ describe("intersection()", function () {
 
 
 describe("values()", function () {
-    var values = decorate(cdata).values();
+    let values = decorate(cdata).values();
     it("should return an array of the values of the component's properties", function () {
         expect(values.length).toEqual(8);
         expect(values[0]).toEqual("jsmith");
         expect(values[7]).toEqual("Software Developer");
     });
 
-    it("should return [] for null, undefined, and {}", function () {
-        try {
-            expect(decorate({}).values().length).toEqual(0);
-            expect(decorate(null).values().length).toEqual(0);
-            expect(decorate(undefined).values().length).toEqual(0);
-        } catch (e) {
-            this.fail("We should not reach this point.");
-        }
+    it("should return [] for {}", function () {
+        expect(decorate({}).values().length).toEqual(0);
+    });
+
+    it("should return null for null or undefined", function () {
+        expect(decorate(null).values()).toBeNull();
+        expect(decorate(undefined).values()).toBeNull();
     });
 });
 
 
-describe("getSpec()", function () {
+describe("like()", function () {
 
-    var that = {
+    let that = {
         id: "pjones",
         age: 45,
         number: '44566',
@@ -356,88 +354,30 @@ describe("getSpec()", function () {
         ssn: "444-11-5555"
     };
 
-
-    describe("like()", function () {
-        it("should return true if the specified object has all of the same properties, with the same data type, as the component", function () {
-            expect(decorate(cdata).getSpec().like(that)).toBeTruthy();
-        });
-
-        it("should be irrelevant that the component does not have all of the properties present in the specified object", function () {
-            var obj = {};
-            _.extend(obj, that);
-            obj.favorites = ['skiiing'];
-            expect(decorate(cdata).getSpec().like(obj)).toBeTruthy();
-        });
-
-        it("should be still return true if one of the corresponding properties is null", function () {
-            var obj = {};
-            _.extend(obj, that);
-            obj.id = null;
-            expect(decorate(cdata).getSpec().like(obj)).toBeTruthy();
-        });
-
-        it("should return false if the specified object does not have one or more properties present in the component", function () {
-            var obj = {};
-            _.extend(obj, that);
-            delete obj.ssn;
-            expect(decorate(cdata).getSpec().like(obj)).toBeFalsy();
-        });
+    it("should return true if the specified object has all of the same properties, with the same data type, as the component", function () {
+        expect(decorate(cdata).like(that)).toBeTruthy();
     });
 
-    describe("equals()", function () {
-        it("should return true if the specified object and the component have exactly the same property names, with the same data types", function () {
-            var obj = {};
-            _.extend(obj, that);
-            delete obj.ssn;
-            expect(decorate(cdata).getSpec().equals(that)).toBeTruthy();
-            expect(decorate(cdata).getSpec().equals(obj)).toBeFalsy();
-        });
-
-        it("should return false if the specified object does not have one or more properties present in the component", function () {
-            var obj = {};
-            _.extend(obj, that);
-            delete obj.ssn;
-            expect(decorate(cdata).getSpec().equals(obj)).toBeFalsy();
-        });
-
-        it("should return false if the component does not have all of the properties present in the specified object", function () {
-            var obj = {};
-            _.extend(obj, that);
-            obj.favorites = ['skiiing'];
-            expect(decorate(cdata).getSpec().equals(obj)).toBeFalsy();
-        });
-
-        it("should be still return true if one of the corresponding properties is null", function () {
-            var obj = {};
-            _.extend(obj, that);
-            obj.id = null;
-            expect(decorate(cdata).getSpec().equals(obj)).toBeTruthy();
-        });
+    it("should be irrelevant that the component does not have all of the properties present in the specified object", function () {
+        let obj = {};
+        extend(obj, that);
+        obj.favorites = ['skiiing'];
+        expect(decorate(cdata).like(obj)).toBeTruthy();
     });
 
+    it("should be still return true if one of the corresponding properties is null", function () {
+        let obj = {};
+        extend(obj, that);
+        obj.id = null;
+        expect(decorate(cdata).like(obj)).toBeTruthy();
+    });
 
-
-    describe("constant()", function(){
-        it("should create an immutable key/value pair", function(){
-            var my = {};
-            decorate(my).constant("__CLASSNAME__", "MyGreatClass");
-            my.__CLASSNAME__ = "OK";
-            expect("MyGreatClass").toEqual(my.__CLASSNAME__);
-        });
-
-        it("should create an key/value pair that can't be deleted from its object scope", function(){
-            var my = {};
-            decorate(my).constant("__CLASSNAME__", "MyGreatClass");
-
-            delete my.__CLASSNAME__;
-            expect("MyGreatClass").toEqual(my.__CLASSNAME__);
-        });
-
-        it("should convert the key to upper case if it is not already upper case", function(){
-            var my = {};
-            decorate(my).constant("some_Name", "Roger");
-            expect(my.SOME_NAME).toBeDefined();
-            expect(my.some_Name).toBeUndefined();
-        });
+    it("should return false if the specified object does not have one or more properties present in the component", function () {
+        let obj = {};
+        extend(obj, that);
+        delete obj.ssn;
+        expect(decorate(cdata).like(obj)).toBeFalsy();
     });
 });
+
+
